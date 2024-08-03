@@ -31,7 +31,7 @@ for row in soup.find("tbody").find_all("tr"):
     date=col[0].text
     rev=col[1].text
     tesla_revenue=pd.concat([tesla_revenue,pd.DataFrame({"Date":[date],"Revenue":[rev]})],ignore_index= True)
-tesla_revenue["Revenue"] = tesla_revenue['Revenue'].str.replace(',|\$',"", regex=True) #removes comma and dollar symbols in reveneue col
+tesla_revenue["Revenue"] = tesla_revenue['Revenue'].str.replace(r'[,\\$]', '', regex=True) #removes comma and dollar symbols in reveneue col
 tesla_revenue.dropna(inplace=True) #to remove null or empty strings
 tesla_revenue = tesla_revenue[tesla_revenue['Revenue'] != ""] #to remove null or empty strings
 #print(tesla_revenue.tail())
@@ -48,8 +48,8 @@ for row in soup1.find("tbody").find_all("tr"):
     col=row.find_all("td")
     date=col[0].text
     rev=col[1].text
-    game_revenue=pd.concat([tesla_revenue,pd.DataFrame({"Date":[date],"Revenue":[rev]})],ignore_index= True)
-game_revenue["Revenue"] = game_revenue['Revenue'].str.replace(',|\$',"", regex=True) #removes comma and dollar symbols in reveneue col
+    game_revenue=pd.concat([game_revenue,pd.DataFrame({"Date":[date],"Revenue":[rev]})],ignore_index= True)
+game_revenue["Revenue"] = game_revenue['Revenue'].str.replace(r'[,\\$]', '', regex=True) #removes comma and dollar symbols in reveneue col
 game_revenue.dropna(inplace=True) #to remove null or empty strings
 game_revenue = game_revenue[game_revenue['Revenue'] != ""] #to remove null or empty strings
 make_graph(gdata,game_revenue,'GameStop')

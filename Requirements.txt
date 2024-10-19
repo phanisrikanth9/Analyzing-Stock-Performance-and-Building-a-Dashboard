@@ -1,0 +1,5 @@
+pandas==1.5.3
+beautifulsoup4==4.12.2
+yfinance==0.2.26
+requests==2.31.0
+plotly==5.15.0

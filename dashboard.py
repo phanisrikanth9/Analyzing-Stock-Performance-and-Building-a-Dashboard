@@ -119,7 +119,10 @@ def fig_performance(close):
         fig.add_trace(go.Scatter(x=rebased.index, y=rebased[t], name=TICKERS[t], line=dict(color=COLORS[t], width=1.8),
                                  hovertemplate="%{y:.0f}"))
     fig.add_hline(y=100, line=dict(color="#8a9099", width=1, dash="dot"))
-    fig.update_yaxes(type="log", title="Value of $100 invested (log scale)")
+    ticks = [t for t in (5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000)
+             if rebased.min().min() / 2 <= t <= rebased.max().max() * 2]
+    fig.update_yaxes(type="log", title="Value of $100 invested (log scale)", tickvals=ticks,
+                     ticktext=[f"${t:,}" for t in ticks], minor=dict(showgrid=False))
     fig.update_xaxes(rangeselector=dict(buttons=[dict(count=6, label="6M", step="month", stepmode="backward"),
                                                  dict(count=1, label="1Y", step="year", stepmode="backward"),
                                                  dict(count=3, label="3Y", step="year", stepmode="backward"),

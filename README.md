@@ -4,7 +4,7 @@ A self-updating dashboard for **Tesla, Amazon, AMD and GameStop**: returns, tren
 
 **Live dashboard:** https://phanisrikanth9.github.io/Analyzing-Stock-Performance-and-Building-a-Dashboard/
 
-![Dashboard preview (built with sample data)](docs/screenshot.png)
+![Dashboard preview](docs/screenshot.png)
 
 ## What it shows
 

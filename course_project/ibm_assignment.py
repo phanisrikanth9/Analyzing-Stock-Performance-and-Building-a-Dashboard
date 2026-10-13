@@ -1,3 +1,5 @@
+# Original IBM "Python Project for Data Science" assignment (Tesla + GameStop).
+# Kept for reference; the project now lives in dashboard.py.
 import pandas as pd
 from bs4 import BeautifulSoup
 import yfinance as yf

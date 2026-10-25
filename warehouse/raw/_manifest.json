@@ -1,0 +1,58 @@
+{
+  "ingested_at": "2026-10-25T21:57:34+00:00",
+  "as_of": "2026-10-25",
+  "source": "yahoo",
+  "prices": [
+    {
+      "ticker": "TSLA",
+      "mode": "backfill",
+      "rows_before": 0,
+      "rows_after": 1255,
+      "new_rows": 1255,
+      "last_date": "2026-10-23",
+      "error": null,
+      "notes": []
+    },
+    {
+      "ticker": "AMZN",
+      "mode": "backfill",
+      "rows_before": 0,
+      "rows_after": 1255,
+      "new_rows": 1255,
+      "last_date": "2026-10-23",
+      "error": null,
+      "notes": []
+    },
+    {
+      "ticker": "AMD",
+      "mode": "backfill",
+      "rows_before": 0,
+      "rows_after": 1255,
+      "new_rows": 1255,
+      "last_date": "2026-10-23",
+      "error": null,
+      "notes": []
+    },
+    {
+      "ticker": "GME",
+      "mode": "backfill",
+      "rows_before": 0,
+      "rows_after": 1255,
+      "new_rows": 1255,
+      "last_date": "2026-10-23",
+      "error": null,
+      "notes": []
+    },
+    {
+      "ticker": "SPY",
+      "mode": "backfill",
+      "rows_before": 0,
+      "rows_after": 1255,
+      "new_rows": 1255,
+      "last_date": "2026-10-23",
+      "error": null,
+      "notes": []
+    }
+  ],
+  "revenue_rows": 20
+}

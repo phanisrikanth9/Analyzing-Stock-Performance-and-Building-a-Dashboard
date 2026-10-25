@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Stock Performance Pipeline · Tesla, Amazon, AMD, GameStop vs the S&amp;P 500</title>
+    <meta name="description" content="A self-updating stock dashboard built on a tested data pipeline: GitHub Actions, dbt, DuckDB and in-browser SQL." />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23123b5d'/%3E%3Cpath d='M6 22l6-7 5 4 9-11' stroke='%23fff' stroke-width='3' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
+  </head>
+  <body>
+    <header class="top">
+      <div class="wrap top-inner">
+        <div>
+          <h1>Stock Performance Pipeline</h1>
+          <p class="sub" id="asof">Loading…</p>
+        </div>
+        <nav>
+          <a href="#markets">Markets</a>
+          <a href="#risk">Risk</a>
+          <a href="#fundamentals">Revenue</a>
+          <a href="#pipeline">Pipeline</a>
+          <a href="#sql">SQL</a>
+          <a href="https://github.com/phanisrikanth9/Analyzing-Stock-Performance-and-Building-a-Dashboard">Code</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="wrap">
+      <section class="intro">
+        <p id="story" class="story"></p>
+        <a href="#pipeline" class="health-pill" id="healthPill">Checking data…</a>
+      </section>
+
+      <section id="cards" class="cards" aria-label="Scorecards"></section>
+
+      <section id="markets" class="panel">
+        <div class="panel-head">
+          <div>
+            <h2>What would $100 have become?</h2>
+            <p class="muted">Total return including dividends, rebased to the start of the period.</p>
+          </div>
+          <div class="seg" id="rangeBtns">
+            <button data-r="6">6M</button><button data-r="12" class="on">1Y</button><button data-r="36">3Y</button><button data-r="60">5Y</button>
+          </div>
+        </div>
+        <div id="growthChart" class="chart"></div>
+      </section>
+
+      <div class="grid2">
+        <section class="panel">
+          <div class="panel-head">
+            <div>
+              <h2>Price and trend</h2>
+              <p class="muted">Above the 200-day average is the usual definition of an uptrend.</p>
+            </div>
+            <select id="trendTicker" aria-label="Stock"></select>
+          </div>
+          <div id="trendChart" class="chart"></div>
+        </section>
+        <section class="panel">
+          <div class="panel-head">
+            <div>
+              <h2>How far below the peak?</h2>
+              <p class="muted">Drawdown from the highest price of the previous 12 months.</p>
+            </div>
+          </div>
+          <div id="ddChart" class="chart"></div>
+        </section>
+      </div>
+
+      <div class="grid2" id="risk">
+        <section class="panel">
+          <div class="panel-head">
+            <div>
+              <h2>Return vs risk, last 12 months</h2>
+              <p class="muted">Up and to the left is better: more return per unit of volatility.</p>
+            </div>
+          </div>
+          <div id="riskChart" class="chart"></div>
+        </section>
+        <section class="panel">
+          <div class="panel-head">
+            <div>
+              <h2>Do they move together?</h2>
+              <p class="muted">Correlation of daily returns, last 252 trading days.</p>
+            </div>
+          </div>
+          <div id="corrChart" class="chart"></div>
+        </section>
+      </div>
+
+      <section class="panel">
+        <div class="panel-head">
+          <div>
+            <h2>Monthly returns</h2>
+            <p class="muted">Each cell is one calendar month's total return.</p>
+          </div>
+          <select id="monthTicker" aria-label="Stock"></select>
+        </div>
+        <div id="monthChart" class="chart short"></div>
+      </section>
+
+      <section class="panel" id="fundamentals">
+        <div class="panel-head">
+          <div>
+            <h2>Is the business growing?</h2>
+            <p class="muted">Quarterly total revenue, billions of USD.</p>
+          </div>
+        </div>
+        <div id="revChart" class="chart"></div>
+      </section>
+
+      <section class="panel">
+        <h2>All figures</h2>
+        <div class="table-scroll"><table id="figures"></table></div>
+      </section>
+
+      <section id="pipeline" class="panel pipeline">
+        <h2>How the data gets here</h2>
+        <p class="muted">Every weekday after the US close, a GitHub Action runs this pipeline. If any data test fails, nothing is published and the last good version stays live.</p>
+        <ol class="flow">
+          <li><b>Extract &amp; load</b><span>Python pulls daily prices and quarterly revenue from Yahoo Finance into Parquet files. Incremental, idempotent, and it reloads a ticker if history changed upstream (splits, dividends).</span></li>
+          <li><b>Transform</b><span>dbt models on DuckDB: staging → returns → marts for prices, risk, beta, correlation, revenue.</span></li>
+          <li><b>Test</b><span id="flowTests">dbt data tests: uniqueness, valid ranges, OHLC consistency, no missing weeks, freshness.</span></li>
+          <li><b>Serve</b><span>Marts exported as JSON for these charts and Parquet for the SQL console below, then deployed to GitHub Pages.</span></li>
+        </ol>
+        <div class="health-grid">
+          <div>
+            <h3>Latest run</h3>
+            <dl id="runFacts"></dl>
+          </div>
+          <div>
+            <h3>Ingest</h3>
+            <table id="ingestTable" class="compact"></table>
+          </div>
+        </div>
+        <details>
+          <summary id="testsSummary">Data tests</summary>
+          <ul id="testList" class="tests"></ul>
+        </details>
+      </section>
+
+      <section id="sql" class="panel">
+        <h2>Query the warehouse yourself</h2>
+        <p class="muted">
+          This runs real SQL in your browser with DuckDB (WebAssembly) on the published marts (also downloadable as <a href="data/fct_daily_prices.parquet">Parquet</a>):
+          <code>fct_daily_prices</code>, <code>mart_ticker_summary</code>, <code>mart_return_correlation</code>,
+          <code>fct_quarterly_revenue</code>, <code>mart_monthly_returns</code>.
+        </p>
+        <div class="examples" id="examples"></div>
+        <textarea id="sqlInput" spellcheck="false" rows="9" aria-label="SQL query"></textarea>
+        <div class="sql-bar">
+          <button id="runSql" class="primary">Run query</button>
+          <span class="muted small" id="sqlStatus">Ctrl/⌘ + Enter to run. The engine (about 8 MB) loads the first time.</span>
+        </div>
+        <div class="table-scroll"><table id="sqlResult" class="compact"></table></div>
+      </section>
+
+      <section class="panel methods">
+        <h2>Methods</h2>
+        <ul>
+          <li>Returns use dividend-adjusted closes, so they are total returns.</li>
+          <li>Volatility = standard deviation of daily returns × √252. Max drawdown is peak-to-trough inside the last 12 months.</li>
+          <li>Beta = slope of the stock's daily returns regressed on SPY's over the last 12 months.</li>
+          <li>Return per risk = 12-month return ÷ 12-month volatility (a Sharpe ratio without the risk-free rate).</li>
+          <li>Validated against the previous pandas version of this project: the SQL marts reproduce its published figures (tested in CI).</li>
+        </ul>
+        <p class="muted small">Not investment advice. Started as IBM's <i>Python Project for Data Science</i> assignment, rebuilt as a data pipeline by <a href="https://phanisrikanth9.github.io/Phani-Portfolio/">Phani Srikanth Samayam</a>.</p>
+      </section>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

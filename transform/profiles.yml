@@ -1,0 +1,7 @@
+stock_pipeline:
+  target: prod
+  outputs:
+    prod:
+      type: duckdb
+      path: "{{ env_var('WAREHOUSE_DB', '../warehouse/warehouse.duckdb') }}"
+      threads: 4

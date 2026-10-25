@@ -1,0 +1,78 @@
+name: Data pipeline
+
+on:
+  schedule:
+    - cron: "30 22 * * 1-5"   # weekdays, after the US market closes
+  workflow_dispatch:           # "Run workflow" button in the Actions tab
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: write   # commit the raw layer back to the repo
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pipeline
+  cancel-in-progress: false   # never interrupt a run halfway through writing data
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      # Unit tests for ingest, then the whole pipeline on the offline snapshot,
+      # checked against the figures the previous version published (scratch dirs only).
+      - run: python -m pytest -q tests
+
+  pipeline:
+    needs: test
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+
+      - name: Ingest, transform, test, export
+        # Fails (and stops the deploy) if any dbt data test fails.
+        run: python -m pipeline.run --source yahoo
+
+      - name: Commit the raw layer
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add warehouse/raw
+          git diff --cached --quiet || git commit -m "Ingest market data ($(date -u +%Y-%m-%d))"
+          git push
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: site/package-lock.json
+      - name: Build the dashboard
+        working-directory: site
+        run: npm ci && npm run build
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site/dist
+
+  deploy:
+    needs: pipeline
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

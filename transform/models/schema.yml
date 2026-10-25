@@ -1,0 +1,64 @@
+version: 2
+
+models:
+  - name: stg_prices
+    description: Typed, de-duplicated daily prices.
+    tests:
+      - unique_combination: { arguments: { columns: [ticker, trade_date] } }
+    columns:
+      - name: ticker
+        tests: [not_null, { relationships: { arguments: { to: ref('stg_tickers'), field: ticker } } }]
+      - name: trade_date
+        tests: [not_null]
+      - name: close
+        tests: [not_null, { between: { arguments: { min_value: 0.0001 } } }]
+      - name: adj_close
+        tests: [not_null, { between: { arguments: { min_value: 0.0001 } } }]
+      - name: volume
+        tests: [{ between: { arguments: { min_value: 0 } } }]
+
+  - name: stg_tickers
+    columns:
+      - name: ticker
+        tests: [unique, not_null]
+
+  - name: fct_daily_prices
+    description: Daily price, returns, moving averages, drawdown and rolling volatility per ticker.
+    tests:
+      - unique_combination: { arguments: { columns: [ticker, trade_date] } }
+    columns:
+      - name: daily_return
+        description: Total daily return (dividends included). Larger than ±100% would mean bad data.
+        tests: [{ between: { arguments: { min_value: -0.95, max_value: 1.5 } } }]
+      - name: drawdown_252d
+        tests: [{ between: { arguments: { min_value: -1, max_value: 0.000001 } } }]
+      - name: volatility_63d
+        tests: [{ between: { arguments: { min_value: 0, max_value: 5 } } }]
+
+  - name: mart_ticker_summary
+    description: One row per ticker with the latest scorecard.
+    columns:
+      - name: ticker
+        tests: [unique, not_null]
+      - name: last_close
+        tests: [not_null]
+      - name: max_drawdown_1y
+        tests: [{ between: { arguments: { min_value: -1, max_value: 0.000001 } } }]
+
+  - name: mart_return_correlation
+    tests:
+      - unique_combination: { arguments: { columns: [ticker_a, ticker_b] } }
+    columns:
+      - name: correlation
+        tests: [{ between: { arguments: { min_value: -1.000001, max_value: 1.000001 } } }]
+
+  - name: fct_quarterly_revenue
+    tests:
+      - unique_combination: { arguments: { columns: [ticker, period_end] } }
+    columns:
+      - name: revenue
+        tests: [not_null, { between: { arguments: { min_value: 0 } } }]
+
+  - name: mart_monthly_returns
+    tests:
+      - unique_combination: { arguments: { columns: [ticker, month] } }

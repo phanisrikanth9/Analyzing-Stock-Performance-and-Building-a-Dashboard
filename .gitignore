@@ -1,2 +1,12 @@
 __pycache__/
-.venv/
+.pytest_cache/
+*.tmp
+warehouse/*.duckdb*
+transform/target/
+transform/logs/
+transform/seeds/tickers.csv
+site/node_modules/
+site/dist/
+site/public/data/
+logs/
+transform/.user.yml

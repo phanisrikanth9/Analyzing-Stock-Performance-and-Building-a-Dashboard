@@ -1,0 +1,34 @@
+name: stock_pipeline
+version: "2.0.0"
+config-version: 2
+profile: stock_pipeline
+
+model-paths: ["models"]
+seed-paths: ["seeds"]
+test-paths: ["tests"]
+macro-paths: ["macros"]
+target-path: "target"
+clean-targets: ["target"]
+
+vars:
+  benchmark: SPY
+  # Set to true when running on the offline fixture, which has no data for the benchmark ETF.
+  allow_missing_tickers: false
+
+models:
+  stock_pipeline:
+    staging:
+      +materialized: view
+    intermediate:
+      +materialized: view
+    marts:
+      +materialized: table
+
+seeds:
+  stock_pipeline:
+    +column_types:
+      symbol: varchar
+      name: varchar
+      sector: varchar
+      color: varchar
+      is_benchmark: boolean

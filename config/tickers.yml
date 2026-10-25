@@ -1,0 +1,25 @@
+# The pipeline's universe. Adding a ticker here is the only change needed:
+# ingest backfills its history, dbt models and tests pick it up, the dashboard shows it.
+benchmark: SPY
+history_years: 5
+tickers:
+  - symbol: TSLA
+    name: Tesla
+    sector: Consumer Discretionary
+    color: "#d6342c"
+  - symbol: AMZN
+    name: Amazon
+    sector: Consumer Discretionary
+    color: "#e68a00"
+  - symbol: AMD
+    name: AMD
+    sector: Information Technology
+    color: "#1f8f74"
+  - symbol: GME
+    name: GameStop
+    sector: Consumer Discretionary
+    color: "#4f6fd1"
+  - symbol: SPY
+    name: S&P 500 (SPY)
+    sector: Benchmark
+    color: "#9aa3b2"

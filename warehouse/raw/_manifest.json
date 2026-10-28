@@ -1,55 +1,55 @@
 {
-  "ingested_at": "2026-10-27T01:35:45+00:00",
-  "as_of": "2026-10-27",
+  "ingested_at": "2026-10-28T01:33:14+00:00",
+  "as_of": "2026-10-28",
   "source": "yahoo",
   "prices": [
     {
       "ticker": "TSLA",
       "mode": "incremental",
-      "rows_before": 1255,
+      "rows_before": 1254,
       "rows_after": 1254,
       "new_rows": 1,
-      "last_date": "2026-10-26",
+      "last_date": "2026-10-27",
       "error": null,
       "notes": []
     },
     {
       "ticker": "AMZN",
       "mode": "incremental",
-      "rows_before": 1255,
+      "rows_before": 1254,
       "rows_after": 1254,
       "new_rows": 1,
-      "last_date": "2026-10-26",
+      "last_date": "2026-10-27",
       "error": null,
       "notes": []
     },
     {
       "ticker": "AMD",
       "mode": "incremental",
-      "rows_before": 1255,
+      "rows_before": 1254,
       "rows_after": 1254,
       "new_rows": 1,
-      "last_date": "2026-10-26",
+      "last_date": "2026-10-27",
       "error": null,
       "notes": []
     },
     {
       "ticker": "GME",
       "mode": "incremental",
-      "rows_before": 1255,
+      "rows_before": 1254,
       "rows_after": 1254,
       "new_rows": 1,
-      "last_date": "2026-10-26",
+      "last_date": "2026-10-27",
       "error": null,
       "notes": []
     },
     {
       "ticker": "SPY",
       "mode": "incremental",
-      "rows_before": 1255,
+      "rows_before": 1254,
       "rows_after": 1254,
       "new_rows": 1,
-      "last_date": "2026-10-26",
+      "last_date": "2026-10-27",
       "error": null,
       "notes": []
     }

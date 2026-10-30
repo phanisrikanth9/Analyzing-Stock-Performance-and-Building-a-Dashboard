@@ -1,6 +1,6 @@
 {
-  "ingested_at": "2026-10-29T01:55:51+00:00",
-  "as_of": "2026-10-29",
+  "ingested_at": "2026-10-30T02:06:28+00:00",
+  "as_of": "2026-10-30",
   "source": "yahoo",
   "prices": [
     {
@@ -9,7 +9,7 @@
       "rows_before": 1254,
       "rows_after": 1254,
       "new_rows": 1,
-      "last_date": "2026-10-28",
+      "last_date": "2026-10-29",
       "error": null,
       "notes": []
     },
@@ -19,7 +19,7 @@
       "rows_before": 1254,
       "rows_after": 1254,
       "new_rows": 1,
-      "last_date": "2026-10-28",
+      "last_date": "2026-10-29",
       "error": null,
       "notes": []
     },
@@ -29,7 +29,7 @@
       "rows_before": 1254,
       "rows_after": 1254,
       "new_rows": 1,
-      "last_date": "2026-10-28",
+      "last_date": "2026-10-29",
       "error": null,
       "notes": []
     },
@@ -39,7 +39,7 @@
       "rows_before": 1254,
       "rows_after": 1254,
       "new_rows": 1,
-      "last_date": "2026-10-28",
+      "last_date": "2026-10-29",
       "error": null,
       "notes": []
     },
@@ -49,7 +49,7 @@
       "rows_before": 1254,
       "rows_after": 1254,
       "new_rows": 1,
-      "last_date": "2026-10-28",
+      "last_date": "2026-10-29",
       "error": null,
       "notes": []
     }

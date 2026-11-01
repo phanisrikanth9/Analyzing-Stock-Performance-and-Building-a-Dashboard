@@ -6,20 +6,20 @@ tickers:
   - symbol: TSLA
     name: Tesla
     sector: Consumer Discretionary
-    color: "#d6342c"
+    color: "#f2545b"
   - symbol: AMZN
     name: Amazon
     sector: Consumer Discretionary
-    color: "#e68a00"
+    color: "#f59e2e"
   - symbol: AMD
     name: AMD
     sector: Information Technology
-    color: "#1f8f74"
+    color: "#22b8cf"
   - symbol: GME
     name: GameStop
     sector: Consumer Discretionary
-    color: "#4f6fd1"
+    color: "#7c8cff"
   - symbol: SPY
     name: S&P 500 (SPY)
     sector: Benchmark
-    color: "#9aa3b2"
+    color: "#94a3b8"

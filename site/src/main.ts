@@ -1,5 +1,10 @@
 import Plotly from 'plotly.js-cartesian-dist-min'
+import '@fontsource/martian-mono/400.css'
+import '@fontsource/martian-mono/600.css'
+import '@fontsource/martian-mono/800.css'
+import '@fontsource-variable/schibsted-grotesk'
 import './style.css'
+import { Hero } from './hero'
 import type { Dashboard, Health, Summary } from './types'
 import { EXAMPLES, runQuery } from './sql'
 
@@ -13,19 +18,24 @@ const num = (v: number | null | undefined, d = 2) => (v == null ? '–' : v.toFi
 const cls = (v: number | null | undefined) => (v == null ? '' : v >= 0 ? 'up' : 'down')
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!)
 
-const BASE_LAYOUT: Partial<Plotly.Layout> = {
-  margin: { l: 52, r: 16, t: 10, b: 36 },
-  paper_bgcolor: 'rgba(0,0,0,0)',
-  plot_bgcolor: 'rgba(0,0,0,0)',
-  font: { family: 'Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif', size: 12, color: '#334155' },
-  xaxis: { gridcolor: '#eef2f6', linecolor: '#cbd5e1', zeroline: false },
-  yaxis: { gridcolor: '#eef2f6', linecolor: '#cbd5e1', zeroline: false },
-  legend: { orientation: 'h', y: 1.1, x: 0 },
-  hovermode: 'x unified',
+const css = (name: string) => getComputedStyle(document.documentElement).getPropertyValue(name).trim()
+
+/** Plotly layout built from the current theme's CSS variables. A fresh object on every call,
+ *  because Plotly writes auto-detected axis types back into the layout it is given. */
+function layout(): Partial<Plotly.Layout> {
+  const axis = { gridcolor: css('--grid'), linecolor: css('--rule'), zeroline: false, tickfont: { family: 'Martian Mono', size: 10, color: css('--muted') } }
+  return {
+    margin: { l: 56, r: 16, t: 10, b: 36 },
+    paper_bgcolor: 'rgba(0,0,0,0)',
+    plot_bgcolor: 'rgba(0,0,0,0)',
+    font: { family: 'Schibsted Grotesk Variable, system-ui, sans-serif', size: 12, color: css('--ink-2') },
+    xaxis: { ...axis },
+    yaxis: { ...axis },
+    legend: { orientation: 'h', y: 1.12, x: 0, font: { family: 'Martian Mono', size: 10, color: css('--ink-2') } },
+    hovermode: 'x unified',
+    hoverlabel: { bgcolor: css('--panel'), bordercolor: css('--rule'), font: { family: 'Martian Mono', size: 11, color: css('--ink') } },
+  }
 }
-// Plotly writes auto-detected axis types back into the layout object it is given, so every
-// chart needs its own copy; a shared object made later charts inherit a 'date' x-axis.
-const layout = (): Partial<Plotly.Layout> => structuredClone(BASE_LAYOUT)
 const CONFIG: Partial<Plotly.Config> = { displayModeBar: false, responsive: true }
 
 async function main() {
@@ -37,33 +47,27 @@ async function main() {
   const stocks = dash.summary.filter((s) => !s.is_benchmark)
   const bench = dash.summary.find((s) => s.is_benchmark)
 
-  $('asof').textContent = `Prices as of ${fmtDate(dash.summary[0]?.as_of)} · updated automatically every weekday`
+  renderTape(dash.summary)
+  new Hero($('hero'), dash)
   renderHealthPill(health)
   renderStory(stocks, bench)
   renderCards(dash.summary)
-  renderGrowth(dash, color, 12)
-  document.querySelectorAll<HTMLButtonElement>('#rangeBtns button').forEach((b) =>
-    b.addEventListener('click', () => {
-      document.querySelectorAll('#rangeBtns button').forEach((x) => x.classList.toggle('on', x === b))
-      renderGrowth(dash, color, Number(b.dataset.r))
-    }),
-  )
   fillSelect('trendTicker', stocks, (t) => renderTrend(dash, t, color[t]))
-  renderTrend(dash, stocks[0].ticker, color[stocks[0].ticker])
-  renderDrawdown(dash, color)
-  renderRisk(dash.summary)
-  renderCorrelation(dash)
   fillSelect('monthTicker', dash.summary, (t) => renderMonthly(dash, t))
-  renderMonthly(dash, stocks[0].ticker)
-  renderRevenue(dash, color)
+  const charts = () => {
+    const tt = $<HTMLSelectElement>('trendTicker').value
+    renderTrend(dash, tt, color[tt])
+    renderDrawdown(dash, color)
+    renderRisk(dash.summary)
+    renderCorrelation(dash)
+    renderMonthly(dash, $<HTMLSelectElement>('monthTicker').value)
+    renderRevenue(dash, color)
+  }
+  charts()
+  setupTheme(charts)
   renderTable(dash.summary)
   renderPipeline(health)
   setupSql()
-}
-
-function fmtDate(iso?: string) {
-  if (!iso) return '–'
-  return new Date(`${iso}T12:00:00`).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
 }
 
 function fillSelect(id: string, rows: Summary[], onChange: (t: string) => void) {
@@ -125,24 +129,6 @@ function sliceMonths(dates: string[], months: number) {
   return i < 0 ? 0 : i
 }
 
-function renderGrowth(dash: Dashboard, color: Record<string, string>, months: number) {
-  const traces = dash.summary.map((s) => {
-    const se = dash.series[s.ticker]
-    const i0 = sliceMonths(se.date, months)
-    const base = se.adj_close[i0]
-    return {
-      x: se.date.slice(i0),
-      y: se.adj_close.slice(i0).map((v) => (100 * v) / base),
-      name: s.ticker,
-      type: 'scatter',
-      mode: 'lines',
-      line: { color: color[s.ticker], width: s.is_benchmark ? 1.5 : 2, dash: s.is_benchmark ? 'dot' : 'solid' },
-      hovertemplate: '$%{y:.0f}',
-    } as Plotly.Data
-  })
-  Plotly.react('growthChart', traces, { ...layout(), yaxis: { ...layout().yaxis, type: months > 12 ? 'log' : 'linear', tickprefix: '$' } }, CONFIG)
-}
-
 function renderTrend(dash: Dashboard, t: string, c: string) {
   const se = dash.series[t]
   const i0 = sliceMonths(se.date, 24)
@@ -152,8 +138,8 @@ function renderTrend(dash: Dashboard, t: string, c: string) {
     [
       { x, y: se.close.slice(i0), name: 'Close', type: 'scatter', mode: 'lines', line: { color: c, width: 2 }, hovertemplate: '$%{y:.2f}' },
       // Moving averages are computed on adjusted prices; scale them to the close for display.
-      { x, y: scaleToClose(se, 'ma_50', i0), name: '50-day', type: 'scatter', mode: 'lines', line: { color: '#64748b', width: 1.3 }, hovertemplate: '$%{y:.2f}' },
-      { x, y: scaleToClose(se, 'ma_200', i0), name: '200-day', type: 'scatter', mode: 'lines', line: { color: '#0f172a', width: 1.3, dash: 'dash' }, hovertemplate: '$%{y:.2f}' },
+      { x, y: scaleToClose(se, 'ma_50', i0), name: '50-day', type: 'scatter', mode: 'lines', line: { color: css('--muted'), width: 1.3 }, hovertemplate: '$%{y:.2f}' },
+      { x, y: scaleToClose(se, 'ma_200', i0), name: '200-day', type: 'scatter', mode: 'lines', line: { color: css('--ink'), width: 1.3, dash: 'dash' }, hovertemplate: '$%{y:.2f}' },
     ],
     { ...layout(), yaxis: { ...layout().yaxis, tickprefix: '$' } },
     CONFIG,
@@ -195,7 +181,8 @@ function renderRisk(rows: Summary[]) {
         type: 'scatter',
         mode: 'text+markers',
         textposition: 'top center',
-        marker: { size: 16, color: r.map((s) => s.color), line: { color: '#fff', width: 2 } },
+        marker: { size: 18, color: r.map((s) => s.color), line: { color: css('--bg'), width: 3 } },
+        textfont: { family: 'Martian Mono', size: 11, color: css('--ink') },
         hovertemplate: '%{text}<br>Volatility %{x:.0%}<br>Return %{y:.0%}<extra></extra>',
       } as Plotly.Data,
     ],
@@ -203,7 +190,7 @@ function renderRisk(rows: Summary[]) {
       ...layout(),
       hovermode: 'closest',
       xaxis: { ...layout().xaxis, title: { text: 'Volatility (annualised)' }, tickformat: '.0%', range: [0, Math.max(...r.map((s) => s.volatility_1y!)) * 1.18] },
-      yaxis: { ...layout().yaxis, title: { text: '12-month return' }, tickformat: '.0%', zeroline: true, zerolinecolor: '#cbd5e1', range: padRange(r.map((s) => s.return_1y!)) },
+      yaxis: { ...layout().yaxis, title: { text: '12-month return' }, tickformat: '.0%', zeroline: true, zerolinecolor: css('--rule'), range: padRange(r.map((s) => s.return_1y!)) },
       margin: { ...layout().margin, l: 60, b: 48 },
     },
     CONFIG,
@@ -232,9 +219,9 @@ function renderCorrelation(dash: Dashboard) {
         zmin: -1,
         zmax: 1,
         colorscale: [
-          [0, '#b91c1c'],
-          [0.5, '#f8fafc'],
-          [1, '#1d4ed8'],
+          [0, css('--down')],
+          [0.5, css('--panel')],
+          [1, css('--cool')],
         ],
         text: z.map((row) => row.map((v) => (v == null ? '' : v.toFixed(2)))) as unknown as string[],
         texttemplate: '%{text}',
@@ -264,9 +251,9 @@ function renderMonthly(dash: Dashboard, t: string) {
         zmin: -lim,
         zmax: lim,
         colorscale: [
-          [0, '#b91c1c'],
-          [0.5, '#f8fafc'],
-          [1, '#15803d'],
+          [0, css('--down')],
+          [0.5, css('--panel')],
+          [1, css('--up')],
         ],
         text: z.map((row) => row.map((v) => (v == null ? '' : `${(v * 100).toFixed(0)}%`))) as unknown as string[],
         texttemplate: '%{text}',
@@ -398,6 +385,39 @@ function fmtCell(v: unknown): string {
   if (v == null) return 'null'
   if (typeof v === 'number') return Number.isInteger(v) ? String(v) : Math.abs(v) < 10 ? v.toFixed(4) : v.toFixed(2)
   return String(v)
+}
+
+function renderTape(rows: Summary[]) {
+  const item = (s: Summary) =>
+    `<span class="tape-item"><b>${s.ticker}</b> ${money(s.last_close)} <span class="${cls(s.day_return)}">${s.day_return != null && s.day_return >= 0 ? '▲' : '▼'} ${pct(s.day_return, 2)}</span></span>`
+  // Two identical halves: the CSS animation scrolls exactly one half, so the loop is seamless.
+  const half = rows.map(item).join('').repeat(4)
+  $('tape').innerHTML = half + half
+}
+
+function setupTheme(redraw: () => void) {
+  const btn = $('themeToggle')
+  const label = () =>
+    btn.setAttribute('aria-label', document.documentElement.dataset.theme === 'paper' ? 'Switch to night theme' : 'Switch to paper theme')
+  label()
+  btn.addEventListener('click', () => {
+    const next = document.documentElement.dataset.theme === 'paper' ? 'night' : 'paper'
+    const apply = () => {
+      document.documentElement.dataset.theme = next
+      try {
+        localStorage.setItem('theme', next)
+      } catch {
+        /* private browsing */
+      }
+      label()
+      redraw()
+      window.dispatchEvent(new Event('themechange'))
+    }
+    // Cross-fade the whole page where view transitions are supported.
+    const doc = document as Document & { startViewTransition?: (cb: () => void) => void }
+    if (doc.startViewTransition && !matchMedia('(prefers-reduced-motion: reduce)').matches) doc.startViewTransition(apply)
+    else apply()
+  })
 }
 
 main().catch((e) => {

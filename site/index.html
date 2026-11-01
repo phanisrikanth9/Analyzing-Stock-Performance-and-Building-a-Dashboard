@@ -6,47 +6,60 @@
     <title>Stock Performance Pipeline · Tesla, Amazon, AMD, GameStop vs the S&amp;P 500</title>
     <meta name="description" content="A self-updating stock dashboard built on a tested data pipeline: GitHub Actions, dbt, DuckDB and in-browser SQL." />
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23123b5d'/%3E%3Cpath d='M6 22l6-7 5 4 9-11' stroke='%23fff' stroke-width='3' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
+    <script>
+      // Apply the saved theme before first paint, so there's no flash.
+      try { document.documentElement.dataset.theme = localStorage.getItem('theme') || 'night' } catch { document.documentElement.dataset.theme = 'night' }
+    </script>
   </head>
   <body>
+    <div class="tape" aria-hidden="true"><div class="tape-track" id="tape"></div></div>
     <header class="top">
       <div class="wrap top-inner">
-        <div>
-          <h1>Stock Performance Pipeline</h1>
-          <p class="sub" id="asof">Loading…</p>
-        </div>
+        <a class="brand" href="#">
+          <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><path d="M2 19l6-7 5 4 10-12" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>Stock Performance Pipeline</span>
+        </a>
         <nav>
-          <a href="#markets">Markets</a>
+          <a href="#trend">Trend</a>
           <a href="#risk">Risk</a>
           <a href="#fundamentals">Revenue</a>
           <a href="#pipeline">Pipeline</a>
           <a href="#sql">SQL</a>
           <a href="https://github.com/phanisrikanth9/Analyzing-Stock-Performance-and-Building-a-Dashboard">Code</a>
         </nav>
+        <button class="theme-toggle" id="themeToggle" aria-label="Switch theme"><span class="sun"></span></button>
       </div>
     </header>
 
-    <main class="wrap">
-      <section class="intro">
-        <p id="story" class="story"></p>
-        <a href="#pipeline" class="health-pill" id="healthPill">Checking data…</a>
-      </section>
-
-      <section id="cards" class="cards" aria-label="Scorecards"></section>
-
-      <section id="markets" class="panel">
-        <div class="panel-head">
+    <section class="hero" id="hero">
+      <div class="wrap">
+        <div class="hero-head">
           <div>
-            <h2>What would $100 have become?</h2>
-            <p class="muted">Total return including dividends, rebased to the start of the period.</p>
+            <h1>What $100 became</h1>
+            <p class="lede"><span class="scrub-date">–</span><span class="scrub-hint"></span></p>
           </div>
-          <div class="seg" id="rangeBtns">
-            <button data-r="6">6M</button><button data-r="12" class="on">1Y</button><button data-r="36">3Y</button><button data-r="60">5Y</button>
+          <div class="ranges" role="group" aria-label="Time range">
+            <button data-range="6" aria-pressed="false">6M</button>
+            <button data-range="12" aria-pressed="true">1Y</button>
+            <button data-range="36" aria-pressed="false">3Y</button>
+            <button data-range="60" aria-pressed="false">5Y</button>
           </div>
         </div>
-        <div id="growthChart" class="chart"></div>
-      </section>
+        <div class="hero-body">
+          <div class="readout" aria-live="polite"></div>
+          <svg class="hero-chart" role="slider" tabindex="0" aria-label="Growth of $100 over time. Use arrow keys to move through dates." aria-valuetext=""></svg>
+        </div>
+        <div class="hero-foot">
+          <p id="story" class="story"></p>
+          <a href="#pipeline" class="health-pill" id="healthPill">Checking data</a>
+        </div>
+      </div>
+    </section>
 
-      <div class="grid2">
+    <main class="wrap">
+      <section id="cards" class="cards" aria-label="Scorecards"></section>
+
+      <div class="grid2" id="trend">
         <section class="panel">
           <div class="panel-head">
             <div>

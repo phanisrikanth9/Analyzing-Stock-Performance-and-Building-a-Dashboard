@@ -1,14 +1,14 @@
 {
-  "ingested_at": "2026-11-26T04:16:53+00:00",
-  "as_of": "2026-11-26",
+  "ingested_at": "2026-11-27T04:25:50+00:00",
+  "as_of": "2026-11-27",
   "source": "yahoo",
   "prices": [
     {
       "ticker": "TSLA",
       "mode": "incremental",
-      "rows_before": 1254,
-      "rows_after": 1255,
-      "new_rows": 1,
+      "rows_before": 1255,
+      "rows_after": 1254,
+      "new_rows": 0,
       "last_date": "2026-11-25",
       "error": null,
       "notes": []
@@ -16,9 +16,9 @@
     {
       "ticker": "AMZN",
       "mode": "incremental",
-      "rows_before": 1254,
-      "rows_after": 1255,
-      "new_rows": 1,
+      "rows_before": 1255,
+      "rows_after": 1254,
+      "new_rows": 0,
       "last_date": "2026-11-25",
       "error": null,
       "notes": []
@@ -26,9 +26,9 @@
     {
       "ticker": "AMD",
       "mode": "incremental",
-      "rows_before": 1254,
-      "rows_after": 1255,
-      "new_rows": 1,
+      "rows_before": 1255,
+      "rows_after": 1254,
+      "new_rows": 0,
       "last_date": "2026-11-25",
       "error": null,
       "notes": []
@@ -36,9 +36,9 @@
     {
       "ticker": "GME",
       "mode": "incremental",
-      "rows_before": 1254,
-      "rows_after": 1255,
-      "new_rows": 1,
+      "rows_before": 1255,
+      "rows_after": 1254,
+      "new_rows": 0,
       "last_date": "2026-11-25",
       "error": null,
       "notes": []
@@ -46,9 +46,9 @@
     {
       "ticker": "SPY",
       "mode": "incremental",
-      "rows_before": 1254,
-      "rows_after": 1255,
-      "new_rows": 1,
+      "rows_before": 1255,
+      "rows_after": 1254,
+      "new_rows": 0,
       "last_date": "2026-11-25",
       "error": null,
       "notes": []
